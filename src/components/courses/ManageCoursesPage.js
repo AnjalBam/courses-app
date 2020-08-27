@@ -1,10 +1,21 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { loadCourses } from "../../redux/actions/courseActions";
 import { loadAuthors } from "../../redux/actions/authorActions";
 import PropTypes from "prop-types";
+import CourseForm from "./CourseForm";
+import { newCourse } from "../../../tools/mockData";
 
-const ManageCoursePage = ({ courses, authors, loadAuthors, loadCourses }) => {
+const ManageCoursePage = ({
+  courses,
+  authors,
+  loadAuthors,
+  loadCourses,
+  ...props
+}) => {
+  const [course, setCourse] = useState({ ...props.course });
+  const [errors, setErrors] = useState({});
+
   useEffect(() => {
     if (courses.length === 0) {
       loadCourses().catch(err => alert("Loading Courses Failed" + err));
@@ -15,10 +26,20 @@ const ManageCoursePage = ({ courses, authors, loadAuthors, loadCourses }) => {
     }
   }, []);
 
+  const handleChange = event => {
+    const { name, value } = event.target;
+    setCourse(prevCourse => ({
+      [name]: name === "authorId" ? parseInt(value, 10) : value,
+    }));
+  };
+
   return (
-    <>
-      <h2>Manage Course</h2>
-    </>
+    <CourseForm
+      course={course}
+      errors={errors}
+      authors={authors}
+      onChange={handleChange}
+    />
   );
 };
 
@@ -26,6 +47,7 @@ const mapStateToProps = state => {
   return {
     courses: state.courses,
     authors: state.authors,
+    course: newCourse,
   };
 };
 
@@ -39,6 +61,7 @@ ManageCoursePage.propTypes = {
   authors: PropTypes.array.isRequired,
   loadCourses: PropTypes.func.isRequired,
   loadAuthors: PropTypes.func.isRequired,
+  course: PropTypes.object.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ManageCoursePage);
